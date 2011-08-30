@@ -1,0 +1,19 @@
+Name:                   Tyrion
+Version:                0.1
+Cabal-Version:          >= 1.8
+Synopsis:               Deployment thing
+Description:            Listens for push messages on AMQP from github and does stuff
+Author:                 William Roe <willroe@gmail.com>
+Build-type:             Simple
+
+Executable tyrion
+  Main-is:              tyrion.hs
+  Hs-source-dirs:       src
+  Build-Depends:        base,
+                        bytestring,
+                        ConfigFile,
+                        MissingH,
+                        mtl,
+                        unix,
+                        amqp>=0.2.9
+
