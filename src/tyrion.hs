@@ -19,8 +19,8 @@ githubConfig :: String -> IO (String, String)
 githubConfig fileLoc = do
   config <- readfile emptyCP fileLoc
   let cp = forceEither config
-  username <- forceEither $ get cp "" "username"
-  password <- forceEither $ get cp "" "password"
+      username = forceEither $ get cp "" "username"
+      password = forceEither $ get cp "" "password"
   return $ (username, password)
 
 githubPush :: (Message, Envelope) -> IO ()
