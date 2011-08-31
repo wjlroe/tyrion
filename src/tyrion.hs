@@ -38,6 +38,7 @@ main = do
   conn <- openConnection "127.0.0.1" vhost username password
   chan <- openChannel conn
   exchange <- declareExchange chan newExchange {exchangeName = exchangeName, exchangeType = "topic"}
+  declareQueue chan newQueue {queueName = githubQueue}
   bindQueue chan githubQueue exchangeName githubRouting
   consumeMsgs chan githubQueue Ack githubPush
   installHandler sigHUP (Catch exitHandler) (Just fullSignalSet)
