@@ -15,5 +15,6 @@ Executable tyrion
                         MissingH,
                         mtl,
                         unix,
+                        haskell98,
                         amqp>=0.2.9
 

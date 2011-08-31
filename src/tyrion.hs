@@ -7,6 +7,7 @@ import System.Posix.Signals
 import Control.Concurrent (threadDelay)
 import Control.Monad (forever)
 import qualified Data.ByteString.Lazy.Char8 as C
+import System(getArgs)
 
 exitHandler :: IO ()
 exitHandler = exitSuccess
@@ -30,7 +31,9 @@ githubPush (msg,env) = do
   where decodedMsg = (C.unpack $ msgBody msg)
 
 main = do
-  (username, password) <- githubConfig ""
+  args <- getArgs
+  let fileLoc = head(args)
+  (username, password) <- githubConfig fileLoc
   conn <- openConnection "127.0.0.1" "/github" username password
   chan <- openChannel conn
   exchange <- declareExchange chan newExchange {exchangeName = githubExchange, exchangeType = "topic"}
