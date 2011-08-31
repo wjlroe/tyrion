@@ -13,16 +13,17 @@ exitHandler :: IO ()
 exitHandler = exitSuccess
 
 githubQueue = "github"
-githubExchange = ""
 githubRouting = "github.push.*.*.*"
 
-githubConfig :: String -> IO (String, String)
+githubConfig :: String -> IO (String, String, String, String)
 githubConfig fileLoc = do
   config <- readfile emptyCP fileLoc
   let cp = forceEither config
       username = forceEither $ get cp "" "username"
       password = forceEither $ get cp "" "password"
-  return $ (username, password)
+      exchange = forceEither $ get cp "" "exchange"
+      vhost    = forceEither $ get cp "" "vhost"
+  return $ (username, password, exchange, vhost)
 
 githubPush :: (Message, Envelope) -> IO ()
 githubPush (msg,env) = do
@@ -33,11 +34,11 @@ githubPush (msg,env) = do
 main = do
   args <- getArgs
   let fileLoc = head(args)
-  (username, password) <- githubConfig fileLoc
-  conn <- openConnection "127.0.0.1" "/github" username password
+  (username, password, exchangeName, vhost) <- githubConfig fileLoc
+  conn <- openConnection "127.0.0.1" vhost username password
   chan <- openChannel conn
-  exchange <- declareExchange chan newExchange {exchangeName = githubExchange, exchangeType = "topic"}
-  bindQueue chan githubQueue githubExchange githubRouting
+  exchange <- declareExchange chan newExchange {exchangeName = exchangeName, exchangeType = "topic"}
+  bindQueue chan githubQueue exchangeName githubRouting
   consumeMsgs chan githubQueue Ack githubPush
   installHandler sigHUP (Catch exitHandler) (Just fullSignalSet)
   forever $ do threadDelay (10^6)
