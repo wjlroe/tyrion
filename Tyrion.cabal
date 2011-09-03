@@ -11,6 +11,10 @@ Executable tyrion
   Hs-source-dirs:       src
   Build-Depends:        base,
                         bytestring,
+                        hslogger,
+                        attoparsec,
+                        utf8-string,
+                        aeson,
                         ConfigFile,
                         MissingH,
                         mtl,
