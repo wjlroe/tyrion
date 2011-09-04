@@ -12,6 +12,8 @@ Executable tyrion
   Build-Depends:        base,
                         bytestring,
                         hslogger,
+                        process,
+                        filepath,
                         attoparsec,
                         utf8-string,
                         aeson,
@@ -21,4 +23,13 @@ Executable tyrion
                         unix,
                         haskell98,
                         amqp>=0.2.9
+
+Executable testtypes
+  Main-is:              testtypes.hs
+  Hs-source-dirs:       src
+  Build-Depends:        base,
+                        attoparsec,
+                        aeson>=0.3.2.11,
+                        bytestring,
+                        mtl
 
