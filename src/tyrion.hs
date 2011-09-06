@@ -66,7 +66,7 @@ initialClone clone_dir giturl = do
       return $ ()
     False -> do
       mkdirP clone_dir
-      let clone_cmd = "git clone -o " ++ clone_dir ++ " " ++ giturl
+      let clone_cmd = "git clone " ++ giturl ++ " " ++ clone_dir
       wrap clone_cmd
 
 wrap :: String -> IO ()
