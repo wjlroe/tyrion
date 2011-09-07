@@ -69,8 +69,19 @@ initialClone clone_dir giturl = do
       let clone_cmd = "git clone " ++ giturl ++ " " ++ clone_dir
       wrap clone_cmd
 
+createReleasesDir :: FilePath -> IO ()
+createReleasesDir releaseDir = do
+  releaseExists <- doesDirectoryExist releaseDir
+  case releaseExists of
+    True -> do
+      putStrLn "releases/ already exists"
+      return $ ()
+    False -> do
+      mkdirP releaseDir
+
 wrap :: String -> IO ()
 wrap action = do
+  putStrLn $ "Running: " ++ action
   code <- system(action)
   case code of
     ExitSuccess -> return ()
@@ -86,17 +97,19 @@ processPush rootdir p = do
       url           = repoUrl repo
       giturl        = "git@" ++ (replace "github.com/" "github.com:" (replace "https://" "" url)) ++ ".git"
       name          = repoName repo
-      releaseDir    = joinPath [rootdir, name, "releases", sha]
+      releaseDir    = joinPath [rootdir, name, "releases"]
+      shaDir        = joinPath [releaseDir, sha]
       currentDir    = joinPath [rootdir, name, "current"]
       cloneDir      = joinPath [rootdir, name, "shared", "cached-copy"]
       syncCmd       = "cd " ++ cloneDir ++ " && git fetch && git reset --hard " ++ sha
-      releaseCmd    = "cp -r " ++ cloneDir ++ " " ++ releaseDir
-      linkCmd       = "rm " ++ currentDir ++ " && ln -s " ++ releaseDir ++ " " ++ currentDir
-  putStrLn $ "dir: " ++ releaseDir
+      releaseCmd    = "cp -r " ++ cloneDir ++ " " ++ shaDir
+      linkCmd       = "rm " ++ currentDir ++ " && ln -s " ++ shaDir ++ " " ++ currentDir
+  putStrLn $ "dir: " ++ shaDir
   putStrLn $ "current: " ++ currentDir
   putStrLn $ "shared: " ++ cloneDir
   -- each function is of type something -> IO(ExitCode)
   initialClone cloneDir giturl
+  createReleasesDir releaseDir
   wrap syncCmd
   wrap releaseCmd
   wrap linkCmd
