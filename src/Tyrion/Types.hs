@@ -39,7 +39,7 @@ data Repository = Repository {
       repoWatchers :: Integer,
       repoUrl :: String,
       repoFork :: Bool,
-      repoLanguage :: String,
+      --repoLanguage :: String,
       repoPushedAt :: String,
       repoOpenIssues :: Integer,
       repoHasDownloads :: Bool,
@@ -60,7 +60,7 @@ instance FromJSON Repository where
                            v .: "watchers" <*>
                            v .: "url" <*>
                            v .: "fork" <*>
-                           v .: "language" <*>
+                           --v .: "language" <*>
                            v .: "pushed_at" <*>
                            v .: "open_issues" <*>
                            v .: "has_downloads" <*>
