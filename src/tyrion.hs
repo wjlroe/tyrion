@@ -103,7 +103,7 @@ processPush rootdir p = do
       cloneDir      = joinPath [rootdir, name, "shared", "cached-copy"]
       syncCmd       = "cd " ++ cloneDir ++ " && git fetch && git reset --hard " ++ sha
       releaseCmd    = "cp -r " ++ cloneDir ++ " " ++ shaDir
-      linkCmd       = "rm " ++ currentDir ++ " && ln -s " ++ shaDir ++ " " ++ currentDir
+      linkCmd       = "rm " ++ currentDir ++ " ; ln -s " ++ shaDir ++ " " ++ currentDir
   putStrLn $ "dir: " ++ shaDir
   putStrLn $ "current: " ++ currentDir
   putStrLn $ "shared: " ++ cloneDir
