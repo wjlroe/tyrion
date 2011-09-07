@@ -104,6 +104,7 @@ processPush rootdir p = do
       syncCmd       = "cd " ++ cloneDir ++ " && git fetch && git reset --hard " ++ sha
       releaseCmd    = "rm -r " ++ shaDir ++ " ; cp -r " ++ cloneDir ++ " " ++ shaDir
       linkCmd       = "rm " ++ currentDir ++ " ; ln -s " ++ shaDir ++ " " ++ currentDir
+      compileCmd    = "cd " ++ currentDir ++ " && make"
   putStrLn $ "dir: " ++ shaDir
   putStrLn $ "current: " ++ currentDir
   putStrLn $ "shared: " ++ cloneDir
@@ -113,6 +114,7 @@ processPush rootdir p = do
   wrap syncCmd
   wrap releaseCmd
   wrap linkCmd
+  wrap compileCmd
   -- /home/deploy/projects/name/releases/49875345/
   -- create directories
   -- releases
