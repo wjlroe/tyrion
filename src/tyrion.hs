@@ -121,6 +121,7 @@ processPush rootdir p = do
   wrap upstartCmd
   wrap stopCmd
   wrap startCmd
+  putStrLn $ "Deploy FINISHED"
   -- /home/deploy/projects/name/releases/49875345/
   -- create directories
   -- releases
