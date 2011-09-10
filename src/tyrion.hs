@@ -105,6 +105,9 @@ processPush rootdir p = do
       releaseCmd    = "rm -r " ++ shaDir ++ " ; cp -r " ++ cloneDir ++ " " ++ shaDir
       linkCmd       = "rm " ++ currentDir ++ " ; ln -s " ++ shaDir ++ " " ++ currentDir
       compileCmd    = "cd " ++ currentDir ++ " && make"
+      upstartCmd    = "cd " ++ currentDir ++ " && sudo foreman export upstart /etc/init -a deploy-" ++ name
+      stopCmd       = "sudo stop deploy-" ++ name ++ " ; echo 'fine'"
+      startCmd      = "sudo start deploy-" ++ name
   putStrLn $ "dir: " ++ shaDir
   putStrLn $ "current: " ++ currentDir
   putStrLn $ "shared: " ++ cloneDir
@@ -115,6 +118,9 @@ processPush rootdir p = do
   wrap releaseCmd
   wrap linkCmd
   wrap compileCmd
+  wrap upstartCmd
+  wrap stopCmd
+  wrap startCmd
   -- /home/deploy/projects/name/releases/49875345/
   -- create directories
   -- releases
