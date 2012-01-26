@@ -1,6 +1,6 @@
 import Network.AMQP
 import Data.ConfigFile
-import Control.Monad.Error
+import Control.Monad.Error hiding (join)
 import Data.Either.Utils
 import System.Exit (exitSuccess)
 import System.Posix.Signals
@@ -18,7 +18,7 @@ import Directory
 import System.FilePath
 import System.Cmd (system)
 import System.Exit (ExitCode(..))
-import Data.String.Utils (replace)
+import Data.String.Utils (replace, splitWs, join)
 import qualified Data.Aeson.Types as Aeson
 import qualified Data.Aeson.Parser as Aeson
 import qualified Data.Attoparsec.Lazy as A
@@ -30,16 +30,18 @@ exitHandler = exitSuccess
 githubQueue = "github"
 githubRouting = "github.push.*.*.*"
 
-githubConfig :: String -> IO (String, String, String, String, FilePath)
+githubConfig :: String -> IO (String, String, String, String, String, FilePath, [String])
 githubConfig fileLoc = do
   config <- readfile emptyCP fileLoc
   let cp = forceEither config
+      hostname = forceEither $ get cp "127.0.0.1" "hostname"
       username = forceEither $ get cp "" "username"
       password = forceEither $ get cp "" "password"
       exchange = forceEither $ get cp "" "exchange"
       vhost    = forceEither $ get cp "" "vhost"
       rootdir  = forceEither $ get cp "" "rootdir"
-  return $ (username, password, exchange, vhost, rootdir)
+      symlinks = splitWs $ forceEither $ get cp "" "symlinks"
+  return $ (hostname, username, password, exchange, vhost, rootdir, symlinks)
 
 mkdirP :: FilePath -> IO ()
 mkdirP filepath = do
@@ -87,8 +89,12 @@ wrap action = do
     ExitSuccess -> return ()
     ExitFailure err -> fail $ "Error running command: " ++ action ++ " Exit status: " ++ show err
 
-processPush :: FilePath -> Payload -> IO ()
-processPush rootdir p = do
+-- symlinkDir shareddir dir -> String
+symlinkDir :: String -> String -> String
+symlinkDir sharedDir dir = "ln -s " ++ joinPath [sharedDir, dir] ++ " " ++ dir
+
+processPush :: FilePath -> [String] -> Payload -> IO ()
+processPush rootdir symlinks p = do
   putStrLn $ "push! " ++ (show p)
   let payload       = payloadPush p
       repo          = pushRepo payload
@@ -100,10 +106,13 @@ processPush rootdir p = do
       releaseDir    = joinPath [rootdir, name, "releases"]
       shaDir        = joinPath [releaseDir, sha]
       currentDir    = joinPath [rootdir, name, "current"]
-      cloneDir      = joinPath [rootdir, name, "shared", "cached-copy"]
+      sharedDir     = joinPath [rootdir, name, "shared"]
+      cloneDir      = joinPath [sharedDir, "cached-copy"]
       syncCmd       = "cd " ++ cloneDir ++ " && git fetch && git reset --hard " ++ sha
       releaseCmd    = "rm -fr " ++ shaDir ++ " ; cp -r " ++ cloneDir ++ " " ++ shaDir
       linkCmd       = "rm " ++ currentDir ++ " ; ln -s " ++ shaDir ++ " " ++ currentDir
+      symlinkCmds   = join " && " (map (symlinkDir sharedDir) symlinks)
+      symlinkCmd    = "cd " ++ currentDir ++ " && " ++ symlinkCmds
       compileCmd    = "cd " ++ currentDir ++ " && make"
       upstartCmd    = "cd " ++ currentDir ++ " && sudo foreman export upstart /etc/init -u deploy -a deploy-" ++ name
       stopCmd       = "sudo stop deploy-" ++ name ++ " ; echo 'fine'; sleep 1"
@@ -117,10 +126,11 @@ processPush rootdir p = do
   wrap syncCmd
   wrap releaseCmd
   wrap linkCmd
-  wrap compileCmd
-  wrap upstartCmd
-  wrap stopCmd
-  wrap startCmd
+  wrap symlinkCmd
+  -- wrap compileCmd
+  -- wrap upstartCmd
+  -- wrap stopCmd
+  -- wrap startCmd
   putStrLn $ "Deploy FINISHED"
   -- /home/deploy/projects/name/releases/49875345/
   -- create directories
@@ -128,8 +138,8 @@ processPush rootdir p = do
   -- checkout source
   -- link current -> release
 
-githubPush :: FilePath -> (Message, Envelope) -> IO ()
-githubPush rootdir (msg,env) = do
+githubPush :: FilePath -> [String] -> (Message, Envelope) -> IO ()
+githubPush rootdir symlinks (msg,env) = do
   putStrLn $ "Got: " ++ (C.unpack body)
   let result = case A.parse Aeson.json body of
                  A.Done _ a     -> fromJSON a
@@ -138,7 +148,7 @@ githubPush rootdir (msg,env) = do
     Success payload ->
         do
 
-          processPush rootdir (payload :: Payload)
+          processPush rootdir symlinks (payload :: Payload)
           ackEnv env
     Error err ->
         do
@@ -151,13 +161,13 @@ main = do
   updateGlobalLogger rootLoggerName (addHandler s)
   args <- getArgs
   let fileLoc = head(args)
-  (username, password, exchangeName, vhost, rootdir) <- githubConfig fileLoc
-  conn <- openConnection "127.0.0.1" vhost username password
+  (hostname, username, password, exchangeName, vhost, rootdir, symlinks) <- githubConfig fileLoc
+  conn <- openConnection hostname vhost username password
   chan <- openChannel conn
   exchange <- declareExchange chan newExchange {exchangeName = exchangeName, exchangeType = "topic"}
   declareQueue chan newQueue {queueName = githubQueue}
   bindQueue chan githubQueue exchangeName githubRouting
-  consumeMsgs chan githubQueue Ack (githubPush rootdir)
+  consumeMsgs chan githubQueue Ack (githubPush rootdir symlinks)
   installHandler sigHUP (Catch exitHandler) (Just fullSignalSet)
   forever $ do threadDelay (10^6)
   closeConnection conn
@@ -177,7 +187,7 @@ somepush = do
   case result of
     Success payload ->
         do
-          processPush "/home/deploy" (payload :: Payload)
+          processPush "/home/deploy" [] (payload :: Payload)
     Error err ->
         do
           putStrLn $ "error: " ++ err
