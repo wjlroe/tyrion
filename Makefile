@@ -10,4 +10,4 @@ compile: configure
 	@runhaskell Setup.lhs build
 
 test: compile
-	cd tests; make
+	cd tests && make
