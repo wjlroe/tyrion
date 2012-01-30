@@ -21,5 +21,6 @@ setup(
         'pika>=0.9.5',
         'Twisted>=11.1.0',
         'subprocess32>=3.2.0',
+        'txWS>=0.7',
     ],
 )

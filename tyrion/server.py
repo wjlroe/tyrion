@@ -1,19 +1,32 @@
-from tornado.websocket import WebSocketHandler
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
-from tornado.web import Application
+from twisted.application         import strports
+from twisted.application.service import Application
+from twisted.internet            import reactor
+from twisted.internet.protocol   import Factory, Protocol
+from twisted.web.static          import File
+from twisted.web.server          import Site
+from txws                        import WebSocketFactory
 
 
-class Handler(WebSocketHandler):
-    def open(self):
-        print "open websocket"
-
-    def on_message(self, message):
-        self.write_message(u"You said: " + message)
-
-    def on_close(self):
-        print "websocket closed"
+class EchoUpper(Protocol):
+    """Echo uppercased."""
+    def dataReceived(self, data):
+        log.msg("Got %r" % (data,))
+        self.transport.write(data.upper())
 
 
-HTTPServer(Application([("/", Handler)])).listen(1024)
-IOLoop.instance().start()
+if __name__ == '__main__':
+    application = Application("ws-streamer")
+
+    echofactory = Factory()
+    echofactory.protocol = EchoUpper
+    service = strports.service("tcp:8076:interface=127.0.0.1",
+                               WebSocketFactory(echofactory))
+    service.setServiceParent(application)
+
+
+    resource = File("./public")
+    webservice = strports.service("tcp:8080:interface=127.0.0.1",
+                                  Site(resource))
+    webservice.setServiceParent(application)
+
+
