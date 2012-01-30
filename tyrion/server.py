@@ -23,7 +23,6 @@ if __name__ == '__main__':
                                WebSocketFactory(echofactory))
     service.setServiceParent(application)
 
-
     resource = File("./public")
     webservice = strports.service("tcp:8080:interface=127.0.0.1",
                                   Site(resource))
