@@ -1,0 +1,4 @@
+pika==0.9.5
+subprocess32==3.2.0
+yamlconfig==0.3.1
+tornado>=2.2
