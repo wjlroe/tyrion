@@ -27,5 +27,3 @@ if __name__ == '__main__':
     webservice = strports.service("tcp:8080:interface=127.0.0.1",
                                   Site(resource))
     webservice.setServiceParent(application)
-
-

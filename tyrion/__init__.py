@@ -10,5 +10,3 @@ Tyrion gets shit done. Specifically he deploys code like A BOSS.
 """
 
 __version__ = '0.0.1'
-
-

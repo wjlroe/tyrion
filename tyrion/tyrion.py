@@ -39,7 +39,8 @@ class Tyrion:
             logging.info("Running: %s", cmd)
             subprocess.check_call(cmd, shell=True)
 
-        subprocess.check_call('git fetch && git reset --hard %s' % push_data['commit'],
+        reset_cmd = 'git fetch && git reset --hard %s' % push_data['commit']
+        subprocess.check_call(reset_cmd,
                               shell=True, cwd=clone_dir)
 
         if os.path.isdir(sha_dir):
@@ -64,5 +65,3 @@ class Tyrion:
                                      shell=True, cwd=current_loc)
         logging.info('reprocess pid: %s', str(reprocess.pid))
         logging.info("deployed: %s", commit_sha)
-
-

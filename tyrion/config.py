@@ -19,4 +19,3 @@ class Config:
         self.exchange = config.get('amqp', 'exchange', '')
         self.vhost = config.get('amqp', 'vhost', '/')
         self.rootdir = config.get('tyrion', 'rootdir', '/tmp/deploy')
-
