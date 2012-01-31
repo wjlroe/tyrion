@@ -4,4 +4,6 @@ build
 #*#
 *#
 *.pyc
+*.conf
+!example.conf
 
