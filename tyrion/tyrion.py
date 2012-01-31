@@ -7,8 +7,10 @@ import os.path
 import subprocess
 import shutil
 import logging
+import argparse
+
 import config
-import rabbitmq
+from rabbitmq import RabbitMQ
 from utils import *
 
 
@@ -65,3 +67,11 @@ class Tyrion:
                                      shell=True, cwd=current_loc)
         logging.info('reprocess pid: %s', str(reprocess.pid))
         logging.info("deployed: %s", commit_sha)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('configfile', action='store')
+    args = parser.parse_args()
+
+    tyrion = Tyrion(args.configfile)
