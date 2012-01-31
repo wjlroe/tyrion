@@ -4,7 +4,7 @@ Tyrion
 
 Tyrion is an awesome continuous deployment tool. That is all it does.
 """
-from setuptools import Command, setup
+from distutils.core import setup
 
 setup(
     name='Tyrion',
@@ -17,6 +17,7 @@ setup(
     long_description=__doc__,
     packages=['tyrion'],
     platforms='any',
+    scripts=['tyrion/tyrion.py'],
     install_requires=[
         'pika>=0.9.5',
         'Twisted>=11.1.0',
