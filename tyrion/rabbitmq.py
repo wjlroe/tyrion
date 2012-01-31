@@ -25,9 +25,9 @@ class RabbitMQ:
                                 queue=queue_name,
                                 routing_key='github.push.*.*.*')
 
-        channel.basic_consume(callback,
-                              queue=queue_name,
-                              no_ack=True)
+        self.channel.basic_consume(self.callback,
+                                   queue=queue_name,
+                                   no_ack=True)
 
     def callback(channel, method, properties, body):
         push_data = github.receive(json.loads(body))
