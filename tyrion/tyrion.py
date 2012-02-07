@@ -24,9 +24,12 @@ class Tyrion:
         self.config = config.Config()
         self.config.read_config(config_path)
 
-        self.rabbitmq = RabbitMQ(self)
+        self.rabbitmq = RabbitMQ(self.config)
 
-        self.rabbitmq.start()
+        self.rabbitmq.start(self.echo_deploy)
+
+    def echo_deploy(self, push_data):
+        print "got: ", push_data
 
     def deploy(self, push_data):
         repo_dir = mkdirs(self.config.rootdir, push_data['name'])
