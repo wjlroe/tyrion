@@ -1,4 +1,4 @@
-def receive(self, payload):
+def receive(payload):
     return {
         'commit': payload['after'],
         'repo_url': http_to_ssh_github_url(payload['repository']['url']),
