@@ -1,4 +1,5 @@
 
-* script to post test github payloads into AMQP for testing
-* http handler for http github pushes
-* script to test posting to http github handler
+* DONE script to post test github payloads into AMQP for testing
+  CLOSED: [2012-02-07 Tue 01:47]
+* TODO http handler for http github pushes
+* TODO script to test posting to http github handler
